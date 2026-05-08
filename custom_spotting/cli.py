@@ -78,6 +78,9 @@ def _train_options(command):
     command = click.option("--camera_move_proba", type=float, default=None)(command)
     command = click.option("--crop_proba", type=float, default=None)(command)
     command = click.option("--even_choice_proba", type=float, default=None)(command)
+    command = click.option("--ce-foreground-scale", "ce_foreground_scale", type=float, default=None)(
+        command
+    )
     command = click.option("--train_split", type=float, default=None)(command)
     command = click.option("--enforce_train_epoch_size", type=int, default=None)(command)
     command = click.option("--enforce_val_epoch_size", type=int, default=None)(command)

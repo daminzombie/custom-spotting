@@ -147,6 +147,22 @@ custom-spotting posttrain --config configs/final_posttrain_from_tdeed.example.js
 
 Only **`_features.*`** and **`_temp_fine.*`** weights transfer; the **`2*N+1`** head is trained for **`N = 4`**.
 
+### Sparse / rare events (most sampled windows are background)
+
+Events are **much rarer** than “ball in play” labels, so defaults bias training toward positives and strengthen foreground CE:
+
+| Knob | Role |
+|------|------|
+| **`even_choice_proba`** (default **`0.35`**) | Often sample a clip that already contains a labeled event; still sometimes sample any clip for background diversity. |
+| **`ce_foreground_scale`** (default **`6.0`**) | Scales all non-background CE weights vs class 0. |
+| **`TRAINING_CE_RELATIVE_WEIGHTS`** in `actions.py` | Per-class relative multipliers (raised for fouls / ball-out). |
+| Extract **`radius_seconds`** (examples use **12**) | When `save_all` is false, widens the temporal band around each annotation so stride-6 stores still land near events. |
+| **`enforce_train_epoch_size`** | Optional fixed number of train steps per epoch (`pretrain.example.json`, **`train_quick_sparse_iteration.example.json`**). |
+
+CLI overrides: `--even_choice_proba`, `--ce_foreground_scale`.
+
+Details and tuning notes: **`configs/README.md`** (section *Rare / sparse labels*).
+
 ## Checkpoints
 
 `checkpoints/` and `runs/` are **gitignored**. Best weights are saved beside **`*.metadata.json`** (training config snapshot, **`num_action_classes`**, etc.). Inference refuses mismatched enums vs metadata.
@@ -200,6 +216,8 @@ config = TrainConfig(
     overlap=50,
     accepted_gap=6,
     clip_frames_count=100,
+    even_choice_proba=0.35,
+    ce_foreground_scale=6.0,
 )
 
 train_from_dataset(

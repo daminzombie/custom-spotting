@@ -33,7 +33,7 @@ ruff format --check .
 - Tracked inference examples live under `predictions/*.example.json`; other `predictions/*.json` are ignored.
 - Keep CLI commands thin; reusable logic stays in package modules.
 - Prefer JSON configs for reproducible training and inference runs.
-- Keep labels and training weights in `custom_spotting/actions.py`.
+- Keep labels and training weights in `custom_spotting/actions.py`; pair updates with **`even_choice_proba`** / **`ce_foreground_scale`** in JSON when label density changes.
 
 ## Checkpoint Compatibility
 

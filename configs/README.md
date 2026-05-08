@@ -23,11 +23,27 @@ Typical framing is **1280×720** (or your chosen width/height) with `train_batch
 
 Experimental / staging:
 
-- `pretrain.example.json` — train from labels only (`load_backbone` optional depending on JSON).
+- `pretrain.example.json` — train from scratch; includes **`enforce_train_epoch_size`: 6144** for sparse quick loops.
 - `posttrain_from_tdeed.example.json` — alternate posttrain template paths.
 - `posttrain_from_custom.example.json` — full-checkpoint continuation if shapes match your run.
 - `posttrain_soccernet_challenge.example.json` — SoccerNet-style validation wiring when applicable.
+- `train_quick_sparse_iteration.example.json` — stronger sparse-label defaults (`even_choice_proba` 0.45, enforced steps).
 
 Adjust **`pretrained_checkpoint_path`** and **`features_model_name`** so RegNet width matches the weight file (`regnety_008` for common SoccerNetBall T‑DEED releases).
 
 For day-to-day work, start from **`final_posttrain_from_tdeed.example.json`** after editing **`dataset_root`** and checkpoint URLs.
+
+## Rare / sparse labels (most windows are background-only)
+
+These repos target **infrequent** broadcast events. Without extra care, random clip sampling mostly sees class **0** (background).
+
+1. **Foreground-biased clip sampling** — `TrainConfig.even_choice_proba` (**default `0.35` in code**, also set in JSON): with that probability, each training step draws a clip that contains **at least one** foreground annotation; otherwise a uniform random clip (`CustomTDeedDataset`).
+2. **Stronger foreground CE** — `ce_foreground_scale` (**default `6.0`** in code) multiplied by **`TRAINING_CE_RELATIVE_WEIGHTS`** in `actions.py` (tuned upward for fouls / ball-out classes).
+3. **Extraction** — Example extract configs use **`radius_seconds`: 12** (with `save_all: false`): keeps **stride** frames **plus** a temporal neighborhood around annotated times so positives land inside 100-frame windows more often. Increase further if extracts still miss labels.
+4. **Fixed steps per epoch** — `enforce_train_epoch_size` / `enforce_val_epoch_size` (see `pretrain.example.json` **6144** and **`train_quick_sparse_iteration.example.json`**) stabilize iteration count when clip lists are tiny; omit those keys for a plain full pass over all clips each epoch.
+
+Aggressive iteration preset:
+
+- `train_quick_sparse_iteration.example.json` — higher `even_choice_proba` (**0.45**), higher `ce_foreground_scale` (**7.0**), enforced train/val steps.
+
+Tune **down** `even_choice_proba` if the model pushes too many false positives (not enough exposure to pure background).

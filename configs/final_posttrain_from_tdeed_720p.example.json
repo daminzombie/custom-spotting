@@ -5,6 +5,8 @@
   "experiment_name": "custom_spotting_posttrain_720p",
   "overlap": 50,
   "accepted_gap": 6,
+  "even_choice_proba": 0.35,
+  "ce_foreground_scale": 6.0,
   "features_model_name": "regnety_008",
   "nr_epochs": 30,
   "train_split": 0.8

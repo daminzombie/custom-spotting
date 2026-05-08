@@ -11,3 +11,9 @@ Notable changes are listed here using a lightweight [Keep a Changelog](https://k
 - Defaults tuned for denser tiling than SoccerNet T-DEED action stride 12: extract **`stride = 6`**, **`overlap = 50`** frames for `clip_frames_count = 100` (half overlap).
 - Example configs under `configs/`, optional SoccerNet challenge mAP path (`pip install -e ".[challenge]"`).
 - `scripts/run-posttrain-pm2.sh` helper for long posttrain jobs.
+
+### Changed
+
+- **Sparse-label training defaults:** `TrainConfig.even_choice_proba` **0.35**, `ce_foreground_scale` **6.0**; higher `TRAINING_CE_RELATIVE_WEIGHTS` spread in `actions.py`.
+- Extract example configs **`radius_seconds` 12**; training JSON presets set `even_choice_proba`, `ce_foreground_scale`; **`posttrain_from_custom.example.json`** aligned to overlap 50 / batch 1; added **`train_quick_sparse_iteration.example.json`**.
+- CLI: **`--ce-foreground-scale`**.

@@ -63,11 +63,12 @@ ACTION_CONFIGS: dict[Action, ActionConfig] = {
 # Cross-entropy only: relative importance among actions (most frequent ≈ 1.0).
 # Final CE weight for each foreground class is ``ce_foreground_scale * value``;
 # background stays 1.0. Independent of :attr:`ActionConfig.weight`.
+# Edges raised vs a flat prior so rare spot-like events are not washed out by background frames.
 TRAINING_CE_RELATIVE_WEIGHTS: dict[Action, float] = {
-    Action.FOUL: 4.0,
-    Action.FREE_KICK: 1.2,
-    Action.BALL_OUT_OF_PLAY_CLEAR: 2.5,
-    Action.BALL_OUT_OF_PLAY_DISTANCE: 2.5,
+    Action.FOUL: 5.0,
+    Action.FREE_KICK: 1.5,
+    Action.BALL_OUT_OF_PLAY_CLEAR: 3.5,
+    Action.BALL_OUT_OF_PLAY_DISTANCE: 3.5,
 }
 
 if len(TRAINING_CE_RELATIVE_WEIGHTS) != len(Action):

@@ -61,7 +61,11 @@ class TrainConfig:
     flip_proba: float = 0.1
     camera_move_proba: float = 0.1
     crop_proba: float = 0.1
-    even_choice_proba: float = 0.0
+    #: With this probability, pick a random clip that contains **some** foreground
+    #: annotation (see :class:`~custom_spotting.data.CustomTDeedDataset`);
+    #: otherwise pick any clip uniformly. Use a **non-zero** value when events are
+    #: rare so most sliding windows are all-background.
+    even_choice_proba: float = 0.35
     train_split: float = 0.9  # used only when run_validation is true
     run_validation: bool = True  # select checkpoints by held-out validation metric by default
     eval_metric: str = "map"  # "map" or "loss"; "map" requires run_validation=True
@@ -92,8 +96,8 @@ class TrainConfig:
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     #: Multiplies :data:`~custom_spotting.actions.TRAINING_CE_RELATIVE_WEIGHTS`
     #: for every foreground class; background CE weight is always ``1.0``.
-    #: E.g. ``5.0`` with a class relative ``2.5`` yields CE weight ``12.5`` vs bg ``1.0``.
-    ce_foreground_scale: float = 5.0
+    #: Slightly above ball-spotting default to offset rare events when many windows are background-only.
+    ce_foreground_scale: float = 6.0
     #: Save ``epochs/epoch_NNN.pt`` and ``metadata/epoch_NNN.metadata.json`` each epoch.
     save_epoch_checkpoints: bool = True
 
