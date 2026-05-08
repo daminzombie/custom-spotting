@@ -1,0 +1,10 @@
+{
+  "video_path": "../data/videos/sample.mp4",
+  "model_checkpoint_path": "../checkpoints/custom_spotting_best.pt",
+  "features_model_name": "regnety_002",
+  "output_path": "../predictions/sample_predictions.json",
+  "stride": 6,
+  "overlap": 50,
+  "clip_frames_count": 100,
+  "val_batch_size": 2
+}
