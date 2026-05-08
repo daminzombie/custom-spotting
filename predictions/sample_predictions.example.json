@@ -1,0 +1,27 @@
+{
+  "video_path": "videos/sample.mp4",
+  "fps": 25.0,
+  "predictions": [
+    {
+      "label": "foul",
+      "team": "left",
+      "position": 120000,
+      "gameTime": "1 - 02:00",
+      "confidence": 0.62
+    },
+    {
+      "label": "free_kick",
+      "team": "right",
+      "position": 245500,
+      "gameTime": "1 - 04:05",
+      "confidence": 0.41
+    },
+    {
+      "label": "ball_out_of_play_clear",
+      "team": "left",
+      "position": 300000,
+      "gameTime": "1 - 05:00",
+      "confidence": 0.38
+    }
+  ]
+}
