@@ -14,7 +14,7 @@ from custom_spotting.training import TrainConfig, train_from_dataset
 
 @click.group()
 def cli():
-    """Custom team action spotting CLI (broadcast-style labels)."""
+    """Custom action spotting CLI (broadcast-style labels)."""
 
 
 @cli.command("extract-frames")

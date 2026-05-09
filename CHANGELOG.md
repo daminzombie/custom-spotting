@@ -2,6 +2,13 @@
 
 Notable changes are listed here using a lightweight [Keep a Changelog](https://keepachangelog.com/)-style format.
 
+## Unreleased
+
+### Changed
+
+- `custom-spotting` is now action-only: model head, training targets, inference, and mAP use `N+1` classes (`background + actions`) and ignore dataset team fields.
+- Checkpoint metadata now records `head_type: "action_only"`; older team-aware `2*N+1` full checkpoints are not load-compatible with the new head.
+
 ## [0.1.0] - 2026-05-07
 
 ### Added

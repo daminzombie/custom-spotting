@@ -13,7 +13,6 @@ from tqdm import tqdm
 from custom_spotting.actions import (
     Action,
     NUM_ACTION_CLASSES,
-    NUM_TEAM_ACTION_CLASSES,
     index_to_label,
 )
 from custom_spotting.checkpoints import read_checkpoint_metadata
@@ -93,12 +92,18 @@ def resolve_infer_video_params(
                 "Use a checkpoint trained with the same Action enum / actions.py, or "
                 "align the code with the checkpoint."
             )
-        n_team_saved = meta.get("num_team_action_classes")
-        if n_team_saved is not None and int(n_team_saved) != NUM_TEAM_ACTION_CLASSES:
+        if meta.get("num_team_action_classes") is not None:
             raise ValueError(
-                f"Checkpoint expects num_team_action_classes={n_team_saved} (see metadata), "
-                f"but this install has NUM_TEAM_ACTION_CLASSES={NUM_TEAM_ACTION_CLASSES}. "
-                "Use a checkpoint trained with the same Action enum / actions.py."
+                "Checkpoint metadata contains num_team_action_classes, which indicates "
+                "an older team-aware custom-spotting head. Retrain custom-spotting "
+                "with the action-only head or initialize from a backbone checkpoint."
+            )
+        head_type = meta.get("head_type")
+        if head_type is not None and head_type != "action_only":
+            raise ValueError(
+                f"Checkpoint head_type={head_type!r} is not compatible with the "
+                "action-only custom-spotting model head. Retrain custom-spotting "
+                "or use a matching checkpoint."
             )
     else:
         _logger.warning(
@@ -327,7 +332,7 @@ def score_video(model, clips, loader, device: str, return_displacements: bool = 
     if not clips:
         raise ValueError("No clips generated for inference.")
     last_frame = max(frame.original_video_frame_nr for clip in clips for frame in clip.frames)
-    scores = np.zeros((last_frame + 1, NUM_TEAM_ACTION_CLASSES + 1), dtype=np.float32)
+    scores = np.zeros((last_frame + 1, NUM_ACTION_CLASSES + 1), dtype=np.float32)
     displacement_sums = np.zeros(last_frame + 1, dtype=np.float32)
     counts = np.zeros((last_frame + 1, 1), dtype=np.float32)
 
@@ -374,11 +379,10 @@ def scores_to_predictions(
     nms_windows.update(decode_nms_window_frames or {})
 
     predictions = []
-    for class_index in range(1, NUM_TEAM_ACTION_CLASSES + 1):
-        result = index_to_label(class_index)
-        if result is None:
+    for class_index in range(1, NUM_ACTION_CLASSES + 1):
+        action = index_to_label(class_index)
+        if action is None:
             continue
-        action, team = result
         class_scores = scores[:, class_index]
         min_score = max(threshold, thresholds.get(action.value, threshold))
         candidate_indices = local_peak_indices(class_scores, min_score)
@@ -400,7 +404,6 @@ def scores_to_predictions(
             predictions.append(
                 {
                     "label": action.value,
-                    "team": team.value,
                     "position": position,
                     "gameTime": format_game_time(position),
                     "confidence": confidence,

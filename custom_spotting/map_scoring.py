@@ -1,8 +1,7 @@
-"""Score aggregation aligned with dudek team-BAS evaluation (``map_mine`` path).
+"""Score aggregation aligned with dudek T-DEED evaluation (``map_mine`` path).
 
-Mirrors ``TeamTDeed2HeadsPrediction`` displacement + ``align_with_original_video``
-(linear) and ``compute_team_scores_matrix`` averaging, then optional
-``soft_non_maximum_suppression`` as in ``BASTeamTDeedEvaluator.eval``.
+Mirrors displacement + ``align_with_original_video`` (linear) and overlapping
+clip score averaging, then optional ``soft_non_maximum_suppression``.
 """
 
 from __future__ import annotations
@@ -117,7 +116,7 @@ def dudek_style_scores_matrix(
     *,
     num_classes_with_background: int,
 ) -> np.ndarray:
-    """Average overlapping clip predictions like ``compute_team_scores_matrix``."""
+    """Average overlapping clip predictions into a dense video score matrix."""
     last_frame = max(frame.original_video_frame_nr for clip in clips for frame in clip.frames)
     num_frames = last_frame + 1
     scores_matrix = np.zeros((num_frames, num_classes_with_background), dtype=np.float32)

@@ -80,32 +80,19 @@ ACTION_CLASS_INDEX: dict[str, int] = {
     action.value: idx for idx, action in enumerate(Action)
 }
 NUM_ACTION_CLASSES: int = len(ACTION_CLASS_INDEX)
-# Total foreground classes = N actions × 2 teams; head output = 2*N + 1 (incl. background)
-NUM_TEAM_ACTION_CLASSES: int = 2 * NUM_ACTION_CLASSES
 
 
-def label_to_index(action: Action | str, team: Team = Team.LEFT) -> int:
-    """Return the model class index for a (action, team) pair.
+def label_to_index(action: Action | str, team: Team | None = None) -> int:
+    """Return the model class index for an action (background = 0).
 
-    Layout (background = 0):
-      indices 1 .. N          → LEFT  team, actions[0..N-1]
-      indices N+1 .. 2*N      → RIGHT team, actions[0..N-1]
+    ``team`` is accepted for compatibility with older callers and ignored.
     """
     action = Action(action)
-    base = ACTION_CLASS_INDEX[action.value] + 1  # 1-based
-    if team == Team.RIGHT:
-        base += NUM_ACTION_CLASSES
-    return base
+    return ACTION_CLASS_INDEX[action.value] + 1  # 1-based
 
 
-def index_to_label(index: int) -> tuple[Action, Team] | None:
-    """Decode a class index back to (Action, Team), or None for background (0)."""
-    if index == 0:
+def index_to_label(index: int) -> Action | None:
+    """Decode an action class index, or None for background/out of range."""
+    if index <= 0 or index > NUM_ACTION_CLASSES:
         return None
-    actions = list(Action)
-    if index <= NUM_ACTION_CLASSES:
-        return actions[index - 1], Team.LEFT
-    right_index = index - NUM_ACTION_CLASSES
-    if right_index <= NUM_ACTION_CLASSES:
-        return actions[right_index - 1], Team.RIGHT
-    return None
+    return list(Action)[index - 1]

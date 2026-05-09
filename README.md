@@ -1,12 +1,12 @@
 # custom-spotting
 
-`custom-spotting` is a reusable Python package for **team** broadcast / scene-level **action spotting** with a fixed custom label set. It mirrors sibling [`custom-ballspotting`](../custom-ballspotting): RegNet + temporal shift backbone, SGP-Mixer temporal stack, displacement auxiliary loss, class weighting, clip sampling, and the same dataset + CLI shape. Each action is predicted separately for LEFT and RIGHT teams:
+`custom-spotting` is a reusable Python package for team-free broadcast / scene-level **action spotting** with a fixed custom label set. It mirrors sibling [`custom-ballspotting`](../custom-ballspotting): RegNet + temporal shift backbone, SGP-Mixer temporal stack, displacement auxiliary loss, class weighting, clip sampling, and the same dataset + CLI shape. Unlike ballspotting, this package ignores team and predicts only action classes:
 
 ```text
-background + N×LEFT actions + N×RIGHT actions   →   2*N + 1 classes
+background + N actions   →   N + 1 classes
 ```
 
-Here **`N = 4`**, so the head has **9** classes. Labels are defined only in `custom_spotting/actions.py` (do not expect SoccerNet’s full 17-class action vocabulary in this repo).
+Here **`N = 4`**, so the head has **5** classes. Labels are defined only in `custom_spotting/actions.py` (do not expect SoccerNet’s full 17-class action vocabulary in this repo).
 
 ## Package layout
 
@@ -74,7 +74,7 @@ class Action(str, Enum):
     BALL_OUT_OF_PLAY_DISTANCE = "ball_out_of_play_distance"
 ```
 
-`Team` includes `"not applicable"`. With default **`TrainConfig.random_team_when_na`**, those rows are randomized to left/right for training (same idea as dudek’s `random_team_when_no_team`).
+Input annotations may still contain a `team` field for compatibility with older datasets, but it is ignored by the model, loss, inference, and mAP. `TrainConfig.random_team_when_na` remains only as a deprecated compatibility field and defaults to `false`.
 
 ## Dataset layout
 
@@ -88,13 +88,13 @@ The loader discovers folders containing **`ground_truth.json`** or optional **`L
 |------|---------|
 | **`label`** | Must match **`Action.value`** (`foul`, `free_kick`, …). |
 | **`position`** | Event time in **milliseconds** from the start of that video file. |
-| **`team`** | `"left"`, `"right"`, or `"not applicable"` (optional; default left). |
+| **`team`** | Optional compatibility field; ignored by custom-spotting. |
 
 ```json
 {
   "annotations": [
-    { "label": "foul", "position": 120000, "team": "left" },
-    { "label": "free_kick", "position": 245500, "team": "right" }
+    { "label": "foul", "position": 120000 },
+    { "label": "free_kick", "position": 245500 }
   ]
 }
 ```
@@ -145,7 +145,7 @@ Typical backbone init is still a T-DEED / RegNet checkpoint via **`posttrain`** 
 custom-spotting posttrain --config configs/final_posttrain_from_tdeed.example.json
 ```
 
-Only **`_features.*`** and **`_temp_fine.*`** weights transfer; the **`2*N+1`** head is trained for **`N = 4`**.
+Only **`_features.*`** and **`_temp_fine.*`** weights transfer; the action-only **`N+1`** head is trained fresh for **`N = 4`**. Older team-aware custom-spotting checkpoints with a single **`2*N+1`** head are not `load_all()` compatible with this action-only model.
 
 ### Sparse / rare events (most sampled windows are background)
 
@@ -165,7 +165,7 @@ Details and tuning notes: **`configs/README.md`** (section *Rare / sparse labels
 
 ## Checkpoints
 
-`checkpoints/` and `runs/` are **gitignored**. Best weights are saved beside **`*.metadata.json`** (training config snapshot, **`num_action_classes`**, etc.). Inference refuses mismatched enums vs metadata.
+`checkpoints/` and `runs/` are **gitignored**. Best weights are saved beside **`*.metadata.json`** (training config snapshot, **`head_type: "action_only"`**, **`num_action_classes`**, etc.). Inference refuses mismatched enums or older team-aware metadata.
 
 ## Inference
 
@@ -187,7 +187,7 @@ custom-spotting infer-video \
   --clip_frames_count=100
 ```
 
-Output schema (same as ballspotting):
+Output schema:
 
 ```json
 {
@@ -196,7 +196,6 @@ Output schema (same as ballspotting):
   "predictions": [
     {
       "label": "foul",
-      "team": "left",
       "position": 120000,
       "gameTime": "1 - 02:00",
       "confidence": 0.62

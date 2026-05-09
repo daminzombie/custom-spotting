@@ -15,7 +15,6 @@ from tqdm import tqdm
 from custom_spotting.actions import (
     Action,
     NUM_ACTION_CLASSES,
-    NUM_TEAM_ACTION_CLASSES,
     TRAINING_CE_RELATIVE_WEIGHTS,
 )
 from custom_spotting.checkpoints import (
@@ -76,8 +75,8 @@ class TrainConfig:
     val_map_use_snms: bool = True
     val_map_snms_class_window: int = 12
     val_map_snms_threshold: float = 0.01
-    #: Resolve ``Team.NOT_APPLICABLE`` to left/right at random when loading GT (dudek-style).
-    random_team_when_na: bool = True
+    #: Deprecated compatibility flag; custom-spotting is action-only and ignores teams.
+    random_team_when_na: bool = False
     #: Directory or zip with SoccerNet-style labels under each game dir (often ``Labels-ball.json`` from BAS tooling).
     soccernet_path: str | None = None
     #: Run ``mAPevaluateTest`` / ``average_mAP`` like dudek ``BASTeamTDeedEvaluator.eval``.
@@ -196,14 +195,13 @@ def train_model(
 
     epoch_summary_path = os.path.join(run_log_dir, "epoch_summary.log")
 
-    # CE weight vector: 2*N+1 entries — background=1.0, then LEFT actions, then RIGHT
-    # (same CE weight per action for both teams).
-    per_action_ce = [
-        config.ce_foreground_scale * TRAINING_CE_RELATIVE_WEIGHTS[action]
-        for action in Action
-    ]
+    # CE weight vector: background=1.0, then one weight per action.
     class_weights = torch.tensor(
-        [1.0] + per_action_ce + per_action_ce,
+        [1.0]
+        + [
+            config.ce_foreground_scale * TRAINING_CE_RELATIVE_WEIGHTS[action]
+            for action in Action
+        ],
         dtype=torch.float32,
         device=config.device,
     )
@@ -408,8 +406,8 @@ def train_model(
                     "best_loss_metric": best_loss_metric,
                     "pretrained_checkpoint_path": pretrained_checkpoint_path,
                     "config": config.__dict__,
+                    "head_type": "action_only",
                     "num_action_classes": NUM_ACTION_CLASSES,
-                    "num_team_action_classes": NUM_TEAM_ACTION_CLASSES,
                     "num_train_clips": len(train_clips),
                     "num_val_clips": len(val_clips),
                     "run_validation": config.run_validation,
@@ -449,8 +447,8 @@ def train_model(
                     "val_challenge_mAP": epoch_challenge_map,
                     "pretrained_checkpoint_path": pretrained_checkpoint_path,
                     "config": config.__dict__,
+                    "head_type": "action_only",
                     "num_action_classes": NUM_ACTION_CLASSES,
-                    "num_team_action_classes": NUM_TEAM_ACTION_CLASSES,
                     "num_train_clips": len(train_clips),
                     "num_val_clips": len(val_clips),
                     "run_validation": config.run_validation,
@@ -562,7 +560,7 @@ def run_epoch(
             forward_start_t = time.perf_counter()
             with torch.amp.autocast(device_type=device_type, enabled=use_cuda):
                 outputs = model(clip_tensor, inference=not training)
-                logits = outputs["logits"].reshape(-1, NUM_TEAM_ACTION_CLASSES + 1)
+                logits = outputs["logits"].reshape(-1, NUM_ACTION_CLASSES + 1)
                 labels = label_ids.reshape(-1)
                 cls_loss = F.cross_entropy(logits, labels, weight=class_weights)
                 displ_loss = F.mse_loss(outputs["displacement"], displacement)

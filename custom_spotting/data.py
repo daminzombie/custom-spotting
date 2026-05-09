@@ -245,8 +245,7 @@ class TDeedClip:
         for idx, frame in enumerate(clip.frames):
             if frame.annotation is None:
                 continue
-            team = frame.annotation.team.flip() if flip else frame.annotation.team
-            label_idx = label_to_index(frame.annotation.label, team)
+            label_idx = label_to_index(frame.annotation.label)
             valid_offsets = range(
                 max(-displacement_radius, -idx),
                 min(displacement_radius, num_frames - idx - 1) + 1,
@@ -429,17 +428,15 @@ def annotations_from_ground_truth_payload(
     *,
     skip_unknown_labels: bool = True,
     unknown_labels_acc: set[str] | None = None,
-    random_team_when_na: bool = True,
+    random_team_when_na: bool = False,
 ) -> list[Annotation]:
     """Parse SoccerNet-style `ground_truth.json` annotations.
 
     Each annotation may optionally carry a ``"team"`` field (``"left"``,
     ``"right"``, or ``"not applicable"``, plus common aliases such as
-    ``"not_applicable"`` or ``"n/a"``).  When absent the annotation defaults
-    to ``Team.LEFT``.  Unrecognised team strings also default to ``Team.LEFT``.
-    When ``random_team_when_na`` is True, ``"not applicable"`` (and recognised
-    NA aliases) is resolved to left or right at random (same idea as dudek
-    ``random_team_when_no_team``).
+    ``"not_applicable"`` or ``"n/a"``). Team is parsed and retained on the
+    annotation for compatibility/debugging, but model targets are action-only.
+    ``random_team_when_na`` is accepted for older configs and ignored.
     """
     out: list[Annotation] = []
     for item in raw.get("annotations", []):
@@ -454,8 +451,6 @@ def annotations_from_ground_truth_payload(
             raise
         pos = int(item["position"])
         team = parse_team_string(item.get("team"))
-        if random_team_when_na and team == Team.NOT_APPLICABLE:
-            team = Team.RIGHT if random.random() > 0.5 else Team.LEFT
         out.append(Annotation(label=action, position=pos, team=team))
     return out
 
@@ -465,7 +460,7 @@ def video_record_from_clip_dir(
     dataset_root: Path,
     *,
     unknown_labels_acc: set[str] | None = None,
-    random_team_when_na: bool = True,
+    random_team_when_na: bool = False,
 ) -> VideoRecord | None:
     """One clip directory: first `*.mp4` + labels JSON."""
     mp4 = find_first_mp4(clip_dir)
@@ -502,7 +497,7 @@ def video_record_from_clip_dir(
 def load_dataset_records(
     dataset_root: str,
     *,
-    random_team_when_na: bool = True,
+    random_team_when_na: bool = False,
 ) -> list[VideoRecord]:
     """
     Load clips under dataset_root (recursive): each folder that contains

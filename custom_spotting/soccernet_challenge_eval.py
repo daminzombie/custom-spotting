@@ -225,7 +225,7 @@ def mAPevaluateTest(
     Predictions_path,
     prediction_file="results_spotting.json",
     printed=False,
-    event_team=True,
+    event_team=False,
     metric="at1",
     event_dictionary: dict[str, int] | None = None,
 ):
@@ -298,15 +298,11 @@ def mAPevaluateTest(
     )
 
 
-def team_bas_event_dictionary() -> dict[str, int]:
-    """``EVENT_DICTIONARY`` keys ``{label}-{team}`` matching dudek / ``TdeedVideoClip``."""
-    from custom_spotting.actions import Action, Team
+def action_event_dictionary() -> dict[str, int]:
+    """``EVENT_DICTIONARY`` keys for action-only custom spotting."""
+    from custom_spotting.actions import Action
 
-    classes: dict[str, int] = {}
-    for i, action in enumerate(Action):
-        classes[f"{action.value}-{Team.LEFT.value}"] = i + 1
-        classes[f"{action.value}-{Team.RIGHT.value}"] = i + 1 + len(Action)
-    return classes
+    return {action.value: i + 1 for i, action in enumerate(Action)}
 
 
 def run_mapevaluate_test_with_zip(
@@ -340,9 +336,9 @@ def run_mapevaluate_test_with_zip(
             zip_path,
             prediction_file="results_spotting.json",
             printed=False,
-            event_team=True,
+            event_team=False,
             metric=metric,
-            event_dictionary=team_bas_event_dictionary(),
+            event_dictionary=action_event_dictionary(),
         )
     finally:
         shutil.rmtree(tmp_root, ignore_errors=True)
