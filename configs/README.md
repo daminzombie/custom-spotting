@@ -1,6 +1,6 @@
 # Example Configs (`custom-spotting`)
 
-Workflow mirrors [`custom-ballspotting`](../custom-ballspotting) but custom-spotting is **action-only**: model output is `background + N actions`, and any dataset `team` field is ignored. Geometry defaults target **stride 6** extraction, **`overlap`: 50** (half overlap on 100‑frame clips), and **`accepted_gap`: 6** during training clip grouping (`TrainConfig`). See **`custom_spotting/actions.py`** for the four label strings.
+Workflow mirrors [`custom-ballspotting`](../custom-ballspotting) but custom-spotting is **action-only**: model output is `background + N actions`. Geometry defaults target **stride 6** extraction, **`overlap`: 50** (half overlap on 100-frame clips), and **`accepted_gap`: 6** during training clip grouping (`TrainConfig`). See **`custom_spotting/actions.py`** for the four label strings.
 
 Primary 720p-style workflow:
 
@@ -25,7 +25,7 @@ Experimental / staging:
 
 - `pretrain.example.json` — train from scratch; includes **`enforce_train_epoch_size`: 6144** for sparse quick loops.
 - `posttrain_from_tdeed.example.json` — alternate posttrain template paths.
-- `posttrain_from_custom.example.json` — full-checkpoint continuation if shapes match your run; older team-aware `2*N+1` custom-spotting checkpoints are not compatible with the action-only `N+1` head.
+- `posttrain_from_custom.example.json` — full-checkpoint continuation if shapes match your run; legacy incompatible custom-spotting heads are not compatible with the action-only `N+1` head.
 - `posttrain_soccernet_challenge.example.json` — SoccerNet-style validation wiring when applicable.
 - `train_quick_sparse_iteration.example.json` — stronger sparse-label defaults (`even_choice_proba` 0.45, enforced steps).
 

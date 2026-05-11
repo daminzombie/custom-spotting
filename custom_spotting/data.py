@@ -16,7 +16,7 @@ from torch.utils.data import Dataset
 from torchvision.transforms.v2.functional import hflip
 from tqdm import tqdm
 
-from custom_spotting.actions import Action, Team, label_to_index, parse_team_string
+from custom_spotting.actions import Action, label_to_index
 from custom_spotting.augmentations import (
     augment_with_camera_movement,
     crop_video,
@@ -32,7 +32,6 @@ SOCCERNET_BALL_LABELS_JSON = "Labels-ball.json"
 class Annotation:
     label: Action
     position: int
-    team: Team = Team.LEFT
 
     def frame_nr(self, fps: float) -> int:
         return int(self.position / 1000 * fps)
@@ -428,16 +427,8 @@ def annotations_from_ground_truth_payload(
     *,
     skip_unknown_labels: bool = True,
     unknown_labels_acc: set[str] | None = None,
-    random_team_when_na: bool = False,
 ) -> list[Annotation]:
-    """Parse SoccerNet-style `ground_truth.json` annotations.
-
-    Each annotation may optionally carry a ``"team"`` field (``"left"``,
-    ``"right"``, or ``"not applicable"``, plus common aliases such as
-    ``"not_applicable"`` or ``"n/a"``). Team is parsed and retained on the
-    annotation for compatibility/debugging, but model targets are action-only.
-    ``random_team_when_na`` is accepted for older configs and ignored.
-    """
+    """Parse SoccerNet-style `ground_truth.json` annotations."""
     out: list[Annotation] = []
     for item in raw.get("annotations", []):
         label_raw = item["label"]
@@ -450,8 +441,7 @@ def annotations_from_ground_truth_payload(
                 continue
             raise
         pos = int(item["position"])
-        team = parse_team_string(item.get("team"))
-        out.append(Annotation(label=action, position=pos, team=team))
+        out.append(Annotation(label=action, position=pos))
     return out
 
 
@@ -460,7 +450,6 @@ def video_record_from_clip_dir(
     dataset_root: Path,
     *,
     unknown_labels_acc: set[str] | None = None,
-    random_team_when_na: bool = False,
 ) -> VideoRecord | None:
     """One clip directory: first `*.mp4` + labels JSON."""
     mp4 = find_first_mp4(clip_dir)
@@ -476,7 +465,6 @@ def video_record_from_clip_dir(
     annotations = annotations_from_ground_truth_payload(
         raw,
         unknown_labels_acc=unknown_labels_acc,
-        random_team_when_na=random_team_when_na,
     )
     try:
         rel = clip_dir.relative_to(dataset_root)
@@ -494,11 +482,7 @@ def video_record_from_clip_dir(
     )
 
 
-def load_dataset_records(
-    dataset_root: str,
-    *,
-    random_team_when_na: bool = False,
-) -> list[VideoRecord]:
+def load_dataset_records(dataset_root: str) -> list[VideoRecord]:
     """
     Load clips under dataset_root (recursive): each folder that contains
     ``ground_truth.json`` or dudek/SoccerNet ``Labels-ball.json`` uses the
@@ -518,7 +502,6 @@ def load_dataset_records(
             clip_dir,
             root,
             unknown_labels_acc=unknown_labels,
-            random_team_when_na=random_team_when_na,
         )
         if rec is not None:
             records.append(rec)

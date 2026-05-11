@@ -1,6 +1,6 @@
 # custom-spotting
 
-`custom-spotting` is a reusable Python package for team-free broadcast / scene-level **action spotting** with a fixed custom label set. It mirrors sibling [`custom-ballspotting`](../custom-ballspotting): RegNet + temporal shift backbone, SGP-Mixer temporal stack, displacement auxiliary loss, class weighting, clip sampling, and the same dataset + CLI shape. Unlike ballspotting, this package ignores team and predicts only action classes:
+`custom-spotting` is a reusable Python package for broadcast / scene-level **action spotting** with a fixed custom label set. It mirrors sibling [`custom-ballspotting`](../custom-ballspotting): RegNet + temporal shift backbone, SGP-Mixer temporal stack, displacement auxiliary loss, class weighting, clip sampling, and the same dataset + CLI shape. It predicts only action classes:
 
 ```text
 background + N actions   →   N + 1 classes
@@ -74,7 +74,7 @@ class Action(str, Enum):
     BALL_OUT_OF_PLAY_DISTANCE = "ball_out_of_play_distance"
 ```
 
-Input annotations may still contain a `team` field for compatibility with older datasets, but it is ignored by the model, loss, inference, and mAP. `TrainConfig.random_team_when_na` remains only as a deprecated compatibility field and defaults to `false`.
+Input annotations are action-only: each event has a label and timestamp.
 
 ## Dataset layout
 
@@ -88,7 +88,6 @@ The loader discovers folders containing **`ground_truth.json`** or optional **`L
 |------|---------|
 | **`label`** | Must match **`Action.value`** (`foul`, `free_kick`, …). |
 | **`position`** | Event time in **milliseconds** from the start of that video file. |
-| **`team`** | Optional compatibility field; ignored by custom-spotting. |
 
 ```json
 {
@@ -145,7 +144,7 @@ Typical backbone init is still a T-DEED / RegNet checkpoint via **`posttrain`** 
 custom-spotting posttrain --config configs/final_posttrain_from_tdeed.example.json
 ```
 
-Only **`_features.*`** and **`_temp_fine.*`** weights transfer; the action-only **`N+1`** head is trained fresh for **`N = 4`**. Older team-aware custom-spotting checkpoints with a single **`2*N+1`** head are not `load_all()` compatible with this action-only model.
+Only **`_features.*`** and **`_temp_fine.*`** weights transfer; the action-only **`N+1`** head is trained fresh for **`N = 4`**. Legacy custom-spotting checkpoints with incompatible heads are not `load_all()` compatible with this action-only model.
 
 ### Sparse / rare events (most sampled windows are background)
 
@@ -165,7 +164,7 @@ Details and tuning notes: **`configs/README.md`** (section *Rare / sparse labels
 
 ## Checkpoints
 
-`checkpoints/` and `runs/` are **gitignored**. Best weights are saved beside **`*.metadata.json`** (training config snapshot, **`head_type: "action_only"`**, **`num_action_classes`**, etc.). Inference refuses mismatched enums or older team-aware metadata.
+`checkpoints/` and `runs/` are **gitignored**. Best weights are saved beside **`*.metadata.json`** (training config snapshot, **`head_type: "action_only"`**, **`num_action_classes`**, etc.). Inference refuses mismatched enums or incompatible metadata.
 
 ## Inference
 

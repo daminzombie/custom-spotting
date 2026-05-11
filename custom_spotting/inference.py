@@ -92,12 +92,6 @@ def resolve_infer_video_params(
                 "Use a checkpoint trained with the same Action enum / actions.py, or "
                 "align the code with the checkpoint."
             )
-        if meta.get("num_team_action_classes") is not None:
-            raise ValueError(
-                "Checkpoint metadata contains num_team_action_classes, which indicates "
-                "an older team-aware custom-spotting head. Retrain custom-spotting "
-                "with the action-only head or initialize from a backbone checkpoint."
-            )
         head_type = meta.get("head_type")
         if head_type is not None and head_type != "action_only":
             raise ValueError(

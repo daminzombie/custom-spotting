@@ -3,7 +3,6 @@ from custom_spotting.actions import (
     ACTION_CONFIGS,
     NUM_ACTION_CLASSES,
     TRAINING_CE_RELATIVE_WEIGHTS,
-    Team,
 )
 from custom_spotting.eval import compute_map, val_map
 from custom_spotting.inference import (
@@ -15,7 +14,6 @@ from custom_spotting.inference import (
 
 __all__ = [
     "Action",
-    "Team",
     "ACTION_CONFIGS",
     "TRAINING_CE_RELATIVE_WEIGHTS",
     "NUM_ACTION_CLASSES",

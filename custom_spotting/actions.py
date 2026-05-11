@@ -2,42 +2,6 @@ from enum import Enum
 from typing import NamedTuple
 
 
-class Team(str, Enum):
-    LEFT = "left"
-    RIGHT = "right"
-    NOT_APPLICABLE = "not applicable"
-
-    def flip(self) -> "Team":
-        if self == Team.LEFT:
-            return Team.RIGHT
-        if self == Team.RIGHT:
-            return Team.LEFT
-        return Team.NOT_APPLICABLE
-
-
-def parse_team_string(raw: str | None) -> Team:
-    """Parse a dataset ``team`` field into :class:`Team`.
-
-    Accepts enum values (``left`` / ``right`` / ``not applicable``), common
-    variants such as ``not_applicable`` or ``n/a``, and falls back to
-    ``Team.LEFT`` for missing or unrecognised values (same behaviour as the
-    previous try/except default).
-    """
-    if raw is None:
-        return Team.LEFT
-    s = str(raw).strip()
-    if not s:
-        return Team.LEFT
-    lower = s.lower()
-    if lower == "n/a":
-        return Team.NOT_APPLICABLE
-    normalized = lower.replace("_", " ")
-    try:
-        return Team(normalized)
-    except ValueError:
-        return Team.LEFT
-
-
 class Action(str, Enum):
     FOUL = "foul"
     FREE_KICK = "free_kick"
@@ -82,11 +46,8 @@ ACTION_CLASS_INDEX: dict[str, int] = {
 NUM_ACTION_CLASSES: int = len(ACTION_CLASS_INDEX)
 
 
-def label_to_index(action: Action | str, team: Team | None = None) -> int:
-    """Return the model class index for an action (background = 0).
-
-    ``team`` is accepted for compatibility with older callers and ignored.
-    """
+def label_to_index(action: Action | str) -> int:
+    """Return the model class index for an action (background = 0)."""
     action = Action(action)
     return ACTION_CLASS_INDEX[action.value] + 1  # 1-based
 

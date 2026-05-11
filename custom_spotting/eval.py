@@ -5,7 +5,7 @@ The ranking / AP integration in :func:`compute_map` matches dudek
 
 :class:`ValMapMetrics` can also include SoccerNet ``mAPevaluateTest`` / ``average_mAP``
 (``challenge_mAP``) when ``soccernet_path`` and per-video ``soccernet_game_id`` are set,
-matching dudek ``BASTeamTDeedEvaluator.eval`` alongside ``map_mine``.
+alongside ``map_mine``.
 """
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def scores_fg_to_challenge_results_json(
     fps: float,
     game_path: str,
 ) -> dict:
-    """Dense per-frame predictions JSON (dudek ``_TeamBASScoredVideo.annotate`` style)."""
+    """Dense per-frame predictions JSON for SoccerNet challenge mAP evaluation."""
     predictions: list[dict] = []
     for i in range(scores_fg.shape[0]):
         x = scores_fg[i]

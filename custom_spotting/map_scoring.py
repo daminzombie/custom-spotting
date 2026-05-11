@@ -69,7 +69,7 @@ def soft_non_maximum_suppression(
 
 
 def _displace_probabilities_timeline(probs: np.ndarray, displacement: np.ndarray) -> np.ndarray:
-    """Same logic as dudek ``TeamTDeed2HeadsPrediction.displaced_label_predictions``."""
+    """Move each timestep's probability vector by its predicted displacement."""
     t_len, num_classes = probs.shape
     aux = np.zeros_like(probs)
     for t in range(t_len):

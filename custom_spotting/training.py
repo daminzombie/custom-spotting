@@ -75,11 +75,9 @@ class TrainConfig:
     val_map_use_snms: bool = True
     val_map_snms_class_window: int = 12
     val_map_snms_threshold: float = 0.01
-    #: Deprecated compatibility flag; custom-spotting is action-only and ignores teams.
-    random_team_when_na: bool = False
     #: Directory or zip with SoccerNet-style labels under each game dir (often ``Labels-ball.json`` from BAS tooling).
     soccernet_path: str | None = None
-    #: Run ``mAPevaluateTest`` / ``average_mAP`` like dudek ``BASTeamTDeedEvaluator.eval``.
+    #: Run SoccerNet ``mAPevaluateTest`` / ``average_mAP`` during validation.
     val_run_soccernet_challenge_map: bool = False
     soccernet_challenge_metric: str = "at1"
     enforce_train_epoch_size: int | None = None
@@ -468,7 +466,7 @@ def train_from_dataset(
     config: TrainConfig | None = None,
 ) -> CustomTDeedModule:
     config = config or TrainConfig()
-    records = load_dataset_records(dataset_root, random_team_when_na=config.random_team_when_na)
+    records = load_dataset_records(dataset_root)
     clips = build_clips(
         records,
         clip_frames_count=config.clip_frames_count,
