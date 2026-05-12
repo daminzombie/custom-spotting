@@ -1,5 +1,5 @@
 {
-  "dataset_root": "../.data/custom-bas/soccernet/score/turbo_result",
+  "dataset_root": "../.data/custom-as/soccernet/score/turbo_result",
   "stride": 6,
   "frame_target_width": 796,
   "frame_target_height": 448,

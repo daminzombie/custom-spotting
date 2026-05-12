@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run post-training with configs/final_posttrain_from_tdeed.example.json under PM2.
+# Run post-training with configs/posttrain_from_custom.example.json under PM2.
 #
 # --- PM2 (survives SSH disconnect; centralized logs) ---
 #
@@ -19,7 +19,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-CONFIG="${REPO_ROOT}/configs/final_posttrain_from_tdeed.example.json"
+CONFIG="${REPO_ROOT}/configs/posttrain_from_custom.example.json"
 export PYTHONUNBUFFERED=1
 
 if [[ -x "${REPO_ROOT}/.venv/bin/custom-spotting" ]]; then
