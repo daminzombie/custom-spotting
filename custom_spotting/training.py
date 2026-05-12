@@ -44,11 +44,15 @@ class TrainConfig:
     #: Max gap between extracted frame indices when grouping into continuous clips (`VideoRecord.get_clips`).
     #: Match ``stride`` used in frame extraction / inference on the dataset.
     accepted_gap: int = 6
-    displacement_radius: int = 4
+    #: Matches T-DEED ``radi_displacement`` (e.g. SoccerNet ``SoccerNet_small.json``: 3).
+    displacement_radius: int = 3
     features_model_name: str = "regnety_002"
     temporal_shift_mode: str = "gsf"
-    n_layers: int = 2
+    #: Matches T-DEED ``n_layers`` (SoccerNet small/big: 3).
+    n_layers: int = 3
+    #: Matches T-DEED ``sgp_ks`` for ``rny002`` / SoccerNet small (9; use 11 for ``rny008`` big).
     sgp_ks: int = 9
+    #: Matches T-DEED ``sgp_r`` (always 4 in published SoccerNet configs).
     sgp_k: int = 4
     gaussian_blur_kernel_size: int = 5
     nr_epochs: int = 25

@@ -224,7 +224,7 @@ class TDeedClip:
     def from_clip(
         cls,
         clip: VideoClip,
-        displacement_radius: int = 4,
+        displacement_radius: int = 3,
         flip_proba: float = 0.0,
         camera_move_proba: float = 0.0,
         crop_proba: float = 0.0,
@@ -321,7 +321,7 @@ class CustomTDeedDataset(Dataset):
     def __init__(
         self,
         clips: list[VideoClip],
-        displacement_radius: int = 4,
+        displacement_radius: int = 3,
         flip_proba: float = 0.0,
         camera_move_proba: float = 0.0,
         crop_proba: float = 0.0,

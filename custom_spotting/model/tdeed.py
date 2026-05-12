@@ -10,11 +10,13 @@ from custom_spotting.model.shift import make_temporal_shift
 
 
 class CustomTDeedModule(nn.Module):
+    """T-DEED-aligned defaults: ``rny002_gsf`` matches ``SoccerNet_small.json`` (3 layers, ``sgp_ks`` 9, ``sgp_r`` 4)."""
+
     def __init__(
         self,
         clip_len: int,
         num_actions: int,
-        n_layers: int = 2,
+        n_layers: int = 3,
         sgp_ks: int = 9,
         sgp_k: int = 4,
         features_model_name: str = "regnety_002",

@@ -1,6 +1,6 @@
 # Example Configs (`custom-spotting`)
 
-Workflow mirrors [`custom-ballspotting`](../custom-ballspotting) but custom-spotting is **action-only**: model output is `background + N actions`. Geometry defaults target **stride 6** extraction, **`overlap`: 50** (half overlap on 100-frame clips), and **`accepted_gap`: 6** during training clip grouping (`TrainConfig`). See **`custom_spotting/actions.py`** for the four label strings.
+Workflow mirrors [`custom-ballspotting`](../custom-ballspotting) but custom-spotting is **action-only**: model output is `background + N actions`. Geometry defaults target **stride 6** extraction, **`overlap`: 50** (half overlap on 100-frame clips), and **`accepted_gap`: 6** during training clip grouping (`TrainConfig`). **Architecture defaults** match T-DEED SoccerNet **`rny002_gsf`** / ``SoccerNet_small.json`` (**``regnety_002``**, **`n_layers` 3**, **`sgp_ks` 9**, **`sgp_k` 4**, **`displacement_radius` 3**); use **`sgp_ks` 11** with **`regnety_008`** (``SoccerNet_big.json``). See **`custom_spotting/actions.py`** for the four label strings.
 
 Primary 720p-style workflow:
 

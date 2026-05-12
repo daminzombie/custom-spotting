@@ -119,7 +119,17 @@ def resolve_infer_video_params(
     use_displacement_resolved = (
         True if use_displacement_refinement is None else use_displacement_refinement
     )
-    displacement_max_resolved = 4 if displacement_max_frames is None else displacement_max_frames
+    if displacement_max_frames is not None:
+        displacement_max_resolved = int(displacement_max_frames)
+    else:
+        displacement_max_resolved = int(
+            _coerce_infer_param(
+                "displacement_radius",
+                None,
+                train_cfg,
+                3,
+            )
+        )
 
     return {
         "clip_frames_count": int(
@@ -141,7 +151,7 @@ def resolve_infer_video_params(
         "temporal_shift_mode": str(
             _coerce_infer_param("temporal_shift_mode", temporal_shift_mode, train_cfg, "gsf")
         ),
-        "n_layers": int(_coerce_infer_param("n_layers", n_layers, train_cfg, 2)),
+        "n_layers": int(_coerce_infer_param("n_layers", n_layers, train_cfg, 3)),
         "sgp_ks": int(_coerce_infer_param("sgp_ks", sgp_ks, train_cfg, 9)),
         "sgp_k": int(_coerce_infer_param("sgp_k", sgp_k, train_cfg, 4)),
         "gaussian_blur_kernel_size": int(

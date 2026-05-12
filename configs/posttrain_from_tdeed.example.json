@@ -5,9 +5,14 @@
   "experiment_name": "custom_posttrain_from_tdeed",
   "overlap": 50,
   "accepted_gap": 6,
+  "displacement_radius": 3,
   "even_choice_proba": 0.35,
   "ce_foreground_scale": 6.0,
   "features_model_name": "regnety_002",
+  "temporal_shift_mode": "gsf",
+  "n_layers": 3,
+  "sgp_ks": 9,
+  "sgp_k": 4,
   "nr_epochs": 10,
   "train_split": 0.8
 }
