@@ -4,7 +4,7 @@
   "save_as": "../checkpoints/{experiment_name}_{timestamp}",
   "experiment_name": "custom_posttrain_from_custom",
   "clip_frames_count": 100,
-  "overlap": 50,
+  "overlap": 75,
   "accepted_gap": 6,
   "displacement_radius": 3,
   "features_model_name": "regnety_002",
