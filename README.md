@@ -71,8 +71,10 @@ class Action(str, Enum):
     FOUL = "foul"
     FREE_KICK = "free_kick"
     BALL_OUT_OF_PLAY_CLEAR = "ball_out_of_play_clear"
-    BALL_OUT_OF_PLAY_DISTANCE = "ball_out_of_play_distance"
+    BALL_OUT_OF_PLAY_DISTANT = "ball_out_of_play_distant"
 ```
+
+`ball_out_of_play_distance` in older JSON is accepted as an alias for `ball_out_of_play_distant` when loading labels.
 
 Input annotations are action-only: each event has a label and timestamp.
 

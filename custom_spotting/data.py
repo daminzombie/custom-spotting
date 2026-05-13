@@ -16,7 +16,7 @@ from torch.utils.data import Dataset
 from torchvision.transforms.v2.functional import hflip
 from tqdm import tqdm
 
-from custom_spotting.actions import Action, label_to_index
+from custom_spotting.actions import Action, label_to_index, parse_action_label
 from custom_spotting.augmentations import (
     augment_with_camera_movement,
     crop_video,
@@ -433,7 +433,7 @@ def annotations_from_ground_truth_payload(
     for item in raw.get("annotations", []):
         label_raw = item["label"]
         try:
-            action = Action(label_raw)
+            action = parse_action_label(str(label_raw))
         except ValueError:
             if skip_unknown_labels:
                 if unknown_labels_acc is not None:

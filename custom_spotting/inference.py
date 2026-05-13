@@ -29,7 +29,7 @@ DEFAULT_DECODE_THRESHOLDS: dict[str, float] = {
     Action.FOUL.value: 0.45,
     Action.FREE_KICK.value: 0.35,
     Action.BALL_OUT_OF_PLAY_CLEAR.value: 0.40,
-    Action.BALL_OUT_OF_PLAY_DISTANCE.value: 0.40,
+    Action.BALL_OUT_OF_PLAY_DISTANT.value: 0.40,
 }
 
 DEFAULT_DECODE_NMS_WINDOW_FRAMES: dict[str, int] = {
@@ -37,7 +37,7 @@ DEFAULT_DECODE_NMS_WINDOW_FRAMES: dict[str, int] = {
     Action.FOUL.value: 12,
     Action.FREE_KICK.value: 12,
     Action.BALL_OUT_OF_PLAY_CLEAR.value: 14,
-    Action.BALL_OUT_OF_PLAY_DISTANCE.value: 14,
+    Action.BALL_OUT_OF_PLAY_DISTANT.value: 14,
 }
 
 
