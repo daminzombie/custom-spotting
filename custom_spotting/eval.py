@@ -18,6 +18,7 @@ from torch.utils.data import DataLoader
 
 from custom_spotting.actions import (
     NUM_ACTION_CLASSES,
+    Action,
     index_to_label,
     label_to_index,
 )
@@ -35,6 +36,7 @@ class ValMapMetrics:
 
     map_mine: float
     challenge_mAP: float | None = None
+    per_class_map: dict[str, float] | None = None
 
 
 @dataclasses.dataclass
@@ -87,12 +89,12 @@ def compute_ap(recalls: np.ndarray, precisions: np.ndarray) -> float:
     return float(np.sum((mrec[idx + 1] - mrec[idx]) * mpre[idx + 1]))
 
 
-def compute_map(
+def compute_per_class_ap(
     video_data: list[VideoScoredData],
     delta_frames: int,
     num_classes: int,
-) -> float:
-    """Compute mAP@delta_frames over all foreground classes."""
+) -> list[float]:
+    """Average precision @ ``delta_frames`` for each foreground class index (0 .. num_classes-1)."""
     APs: list[float] = []
 
     for class_idx in range(num_classes):
@@ -163,6 +165,16 @@ def compute_map(
         recalls = cum_TP / (total_gt + 1e-8)
         APs.append(compute_ap(recalls, precisions))
 
+    return APs
+
+
+def compute_map(
+    video_data: list[VideoScoredData],
+    delta_frames: int,
+    num_classes: int,
+) -> float:
+    """Compute mAP@delta_frames over all foreground classes (mean of per-class AP)."""
+    APs = compute_per_class_ap(video_data, delta_frames, num_classes)
     return float(np.mean(APs)) if APs else 0.0
 
 
@@ -251,7 +263,11 @@ def val_map(
                 else:
                     challenge_merged[gid]["predictions"].extend(payload["predictions"])
 
-    map_mine = compute_map(video_data, delta_frames, NUM_ACTION_CLASSES)
+    per_class_aps = compute_per_class_ap(video_data, delta_frames, NUM_ACTION_CLASSES)
+    map_mine = float(np.mean(per_class_aps)) if per_class_aps else 0.0
+    per_class_map = {
+        list(Action)[i].value: per_class_aps[i] for i in range(NUM_ACTION_CLASSES)
+    }
 
     challenge_mAP: float | None = None
     if run_soccernet_challenge_map:
@@ -292,4 +308,8 @@ def val_map(
             except Exception as e:  # noqa: BLE001
                 warnings.warn(f"SoccerNet challenge mAP failed: {e}", stacklevel=2)
 
-    return ValMapMetrics(map_mine=map_mine, challenge_mAP=challenge_mAP)
+    return ValMapMetrics(
+        map_mine=map_mine,
+        challenge_mAP=challenge_mAP,
+        per_class_map=per_class_map,
+    )
